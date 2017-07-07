@@ -1,11 +1,11 @@
-var async = require('async');
+const async = require('async');
 
 const tasks = {
     list(req, res){
 
-        let docDB = req.app.locals.docDB;
+        const taskService = req.app.locals.taskService;
 
-        var querySpec = {
+        const querySpec = {
             query: 'SELECT * FROM root r WHERE r.completed=@completed',
             parameters: [{
                 name: '@completed',
@@ -13,7 +13,7 @@ const tasks = {
             }]
         };
 
-        docDB.find(querySpec)
+        taskService.find(querySpec)
         .then((items) => {
             res.render('index', {
                 title: 'My ToDo List ',
@@ -21,35 +21,42 @@ const tasks = {
             });
         })
         .catch((err) => {
-            console.log(err);
+            throw err;
         });
     },
 
     create(req, res) {
-        let docDB = req.app.locals.docDB;
+        let taskService = req.app.locals.taskService;
         let item = req.body;
 
-        docDB.addItem(item)
+        taskService.addItem(item)
         .then(() => {
             res.redirect('/');
         })
         .catch((err) => {
-            console.log(err);
+            throw err;
         });
     },
 
     complete(req, res) {
-        let completedTasks = Object.keys(req.body);
-        let docDB = req.app.locals.docDB;
-
+        const completedTasks = Object.keys(req.body);
+        const taskService = req.app.locals.taskService;
+        
         async.forEach(completedTasks, (completedTask, callback) => {
-            docDB.updateItem(completedTask)
+            taskService.updateItem(completedTask)
             .then(() => {
                 callback(null);
             })
             .catch((err) => {
                 callback(err);
             });
+        }, (err) => {
+            if (err) {
+                throw err;
+            } 
+            else {
+                res.redirect('/');    
+            }
         });
     }
 }

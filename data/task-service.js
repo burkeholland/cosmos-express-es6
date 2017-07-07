@@ -1,7 +1,7 @@
-let DocumentClient = require('documentdb').DocumentClient;
-let dbUtils = require('./doc-db-utils');
+const DocumentClient = require('documentdb').DocumentClient;
+const dbUtils = require('./doc-db-utils');
 
-function Task(host, authKey, databaseId, collectionId) {
+function TaskService(host, authKey, databaseId, collectionId) {
 
     this.databaseId = databaseId;
     this.collectionId = collectionId;
@@ -11,7 +11,7 @@ function Task(host, authKey, databaseId, collectionId) {
     });
 
     this.init = () => {
-        let self = this;
+        const self = this;
         
         return new Promise((resolve, reject) => {
             dbUtils.getOrCreateDatabase(self.client, self.databaseId)
@@ -32,7 +32,7 @@ function Task(host, authKey, databaseId, collectionId) {
     }
 
     this.find = (querySpec) => {
-        let self = this;
+        const self = this;
 
         return new Promise((resolve, reject) => {
             self.client.queryDocuments(self.collection._self, querySpec)
@@ -47,7 +47,7 @@ function Task(host, authKey, databaseId, collectionId) {
     }
 
     this.addItem = (item) => {
-        let self = this;
+        const self = this;
 
         item.date = Date.now();
         item.completed = false;
@@ -64,31 +64,30 @@ function Task(host, authKey, databaseId, collectionId) {
     }
 
     this.updateItem = (itemId) => {
-        let self = this;
+        const self = this;
 
         return new Promise((resolve, reject) => {
-            self.getItem(itemId, (err, doc) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    doc.completed = true;
+            self.getItem(itemId)
+            .then((doc) => {
+                doc.completed = true;
 
-                    self.client.replaceDocument(doc._self, doc, (err, replaced) => {
-                        if (err) {
-                            reject(err);
-                        } 
-                        else {
-                            resolve(replaced);
-                        }
-                    });
-                }
+                self.client.replaceDocument(doc._self, doc, (err, replaced) => {
+                    if (err) {
+                        reject(err);
+                    } 
+                    else {
+                        resolve(replaced);
+                    }
+                });
+            })
+            .catch((err) => {
+                reject(err);
             });
         });
     }
 
     this.getItem = (itemId) => {
-        var querySpec = {
+        const querySpec = {
             query: 'SELECT * FROM root r WHERE r.id = @id',
             parameters: [{
                 name: '@id',
@@ -110,4 +109,4 @@ function Task(host, authKey, databaseId, collectionId) {
     }
 }
 
-module.exports = Task;
+module.exports = TaskService;

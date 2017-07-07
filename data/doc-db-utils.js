@@ -1,5 +1,5 @@
 exports.getOrCreateDatabase = (client, databaseId) => {
-    let querySpec = {
+    const querySpec = {
         query: 'SELECT * FROM root r WHERE r.id= @id',
         parameters: [{
             name: '@id',
@@ -30,7 +30,7 @@ exports.getOrCreateDatabase = (client, databaseId) => {
 }
 
 exports.getOrCreateCollection = (client, databaseLink, collectionId, callback) => {
-    var querySpec = {
+    const querySpec = {
         query: 'SELECT * FROM root r WHERE r.id=@id',
         parameters: [{
             name: '@id',

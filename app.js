@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 
-var DocDB = require('./data/doc-db');
+var TaskService = require('./data/task-service');
 var config = require('./config');
 var tasks = require('./routes/tasks');
 
@@ -28,10 +28,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // create the task db object here
-var docDB = new DocDB(config.host, config.authKey, config.databaseId, config.collectionId);
-docDB.init();
+var taskService = new TaskService(config.host, config.authKey, config.databaseId, config.collectionId);
+taskService.init();
 
-app.locals.docDB = docDB;
+app.locals.taskService = taskService;
 
 app.get('/', tasks.list.bind(this));
 app.post('/tasks/create', tasks.create);
